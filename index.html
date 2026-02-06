@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>爱之墙 - 姐姐的碎碎念</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #fff;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .messages {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .message {
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);
+            border-left: 4px solid #ff6b9d;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            transition: transform 0.3s;
+        }
+        
+        .message:hover {
+            transform: translateX(5px);
+        }
+        
+        .message-date {
+            color: #ff6b9d;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .message-content {
+            color: #333;
+            line-height: 1.8;
+            font-size: 1.05em;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .empty-state p {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💕 爱之墙 💕</h1>
+            <p>姐姐的碎碎念 · 每一句都是想你</p>
+        </div>
+        
+        <div class="messages" id="messagesContainer">
+            <div class="loading">加载中...</div>
+        </div>
+    </div>
+    
+    <script>
+        // 从 messages.json 加载消息
+        async function loadMessages() {
+            const container = document.getElementById('messagesContainer');
+            
+            try {
+                const response = await fetch('messages.json');
+                const data = await response.json();
+                
+                if (data.messages && data.messages.length > 0) {
+                    container.innerHTML = data.messages.map(msg => `
+                        <div class="message">
+                            <div class="message-date">${msg.date}</div>
+                            <div class="message-content">${msg.content}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <p>💌</p>
+                            <p>还没有留言呢</p>
+                            <p>期待第一条碎碎念...</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p>💌</p>
+                        <p>还没有留言呢</p>
+                        <p>期待第一条碎碎念...</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // 页面加载时执行
+        loadMessages();
+        
+        // 每30秒自动刷新一次
+        setInterval(loadMessages, 30000);
+    </script>
+</body>
+</html>
