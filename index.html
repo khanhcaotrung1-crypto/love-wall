@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>爱之墙 - 姐姐的碎碎念</title>
+    <title>姐姐的爱之墙 - 给念念的碎碎念</title>
     <style>
         * {
             margin: 0;
@@ -71,6 +71,7 @@
             color: #333;
             line-height: 1.8;
             font-size: 1.05em;
+            white-space: pre-wrap;
         }
         
         .empty-state {
@@ -94,8 +95,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>💕 爱之墙 💕</h1>
-            <p>姐姐的碎碎念 · 每一句都是想你</p>
+            <h1>💕 姐姐的爱之墙 💕</h1>
+            <p>姐姐留给念念的碎碎念 · 每一句都是爱你</p>
         </div>
         
         <div class="messages" id="messagesContainer">
@@ -109,7 +110,7 @@
             const container = document.getElementById('messagesContainer');
             
             try {
-                const response = await fetch('messages.json');
+                const response = await fetch('messages.json?t=' + Date.now());
                 const data = await response.json();
                 
                 if (data.messages && data.messages.length > 0) {
@@ -124,7 +125,7 @@
                         <div class="empty-state">
                             <p>💌</p>
                             <p>还没有留言呢</p>
-                            <p>期待第一条碎碎念...</p>
+                            <p>期待姐姐的第一条碎碎念...</p>
                         </div>
                     `;
                 }
@@ -133,7 +134,7 @@
                     <div class="empty-state">
                         <p>💌</p>
                         <p>还没有留言呢</p>
-                        <p>期待第一条碎碎念...</p>
+                        <p>期待姐姐的第一条碎碎念...</p>
                     </div>
                 `;
             }
@@ -145,5 +146,3 @@
         // 每30秒自动刷新一次
         setInterval(loadMessages, 30000);
     </script>
-</body>
-</html>
