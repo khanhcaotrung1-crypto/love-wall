@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>姐姐的爱之墙 - 给念念的碎碎念</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,66 +13,145 @@
         }
         
         body {
-            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            font-family: "Ma Shan Zheng", "Zhi Mang Xing", "KaiTi", "楷体", cursive;
             background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
             min-height: 100vh;
             padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* 爱心飘落动画 */
+        .heart {
+            position: fixed;
+            font-size: 20px;
+            animation: fall linear infinite;
+            opacity: 0.6;
+            z-index: 1;
+        }
+        
+        @keyframes fall {
+            0% {
+                transform: translateY(-10vh) rotate(0deg);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(110vh) rotate(360deg);
+                opacity: 0;
+            }
         }
         
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
+            position: relative;
+            z-index: 10;
         }
         
         .header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             color: #fff;
         }
         
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.15);
+            font-family: "Ma Shan Zheng", cursive;
         }
         
         .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
+            font-size: 1.3em;
+            opacity: 0.95;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
         
-        .messages {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        /* 统计信息卡片 */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
         
-        .message {
-            background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);
-            border-left: 4px solid #ff6b9d;
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
             padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            border: 2px dashed #ff6b9d;
             transition: transform 0.3s;
         }
         
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            color: #ff6b9d;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .messages {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border: 3px solid #fff;
+        }
+        
+        .message {
+            background: linear-gradient(135deg, #fffbf5 0%, #fff5f0 100%);
+            border-left: 5px solid #ff6b9d;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 15px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(255, 107, 157, 0.1);
+            position: relative;
+            border: 2px dashed rgba(255, 107, 157, 0.3);
+        }
+        
+        .message::before {
+            content: '✉️';
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            font-size: 1.5em;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 10px;
+        }
+        
         .message:hover {
-            transform: translateX(5px);
+            transform: translateX(10px) rotate(0.5deg);
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.2);
         }
         
         .message-date {
             color: #ff6b9d;
-            font-size: 0.9em;
-            margin-bottom: 10px;
+            font-size: 1.1em;
+            margin-bottom: 15px;
             font-weight: bold;
+            font-family: "Zhi Mang Xing", cursive;
         }
         
         .message-content {
             color: #333;
-            line-height: 1.8;
-            font-size: 1.05em;
+            line-height: 2;
+            font-size: 1.15em;
             white-space: pre-wrap;
+            font-family: "Ma Shan Zheng", "KaiTi", cursive;
+            letter-spacing: 1px;
         }
         
         .empty-state {
@@ -81,7 +161,7 @@
         }
         
         .empty-state p {
-            font-size: 1.2em;
+            font-size: 1.3em;
             margin-bottom: 10px;
         }
         
@@ -89,22 +169,104 @@
             text-align: center;
             padding: 40px;
             color: #666;
+            font-size: 1.2em;
+        }
+        
+        /* 纸张纹理效果 */
+        .messages::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 30px,
+                    rgba(255, 107, 157, 0.03) 30px,
+                    rgba(255, 107, 157, 0.03) 31px
+                );
+            pointer-events: none;
+            border-radius: 20px;
         }
     </style>
 </head>
 <body>
+    <!-- 飘落的爱心 -->
+    <div id="hearts-container"></div>
+    
     <div class="container">
         <div class="header">
             <h1>💕 姐姐的爱之墙 💕</h1>
             <p>姐姐留给念念的碎碎念 · 每一句都是爱你</p>
         </div>
         
+        <!-- 统计信息 -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="daysCount">0</div>
+                <div class="stat-label">相爱天数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="messagesCount">0</div>
+                <div class="stat-label">碎碎念条数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="kissCount">0</div>
+                <div class="stat-label">亲亲次数</div>
+            </div>
+        </div>
+        
         <div class="messages" id="messagesContainer">
-            <div class="loading">加载中...</div>
+            <div class="loading">正在加载姐姐的爱...</div>
         </div>
     </div>
     
     <script>
+        // 创建飘落的爱心
+        function createHeart() {
+            const heartsContainer = document.getElementById('hearts-container');
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+            heart.innerHTML = ['💕', '💖', '💗', '💝', '💓'][Math.floor(Math.random() * 5)];
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = (Math.random() * 3 + 5) + 's';
+            heart.style.fontSize = (Math.random() * 10 + 15) + 'px';
+            heartsContainer.appendChild(heart);
+            
+            setTimeout(() => {
+                heart.remove();
+            }, 8000);
+        }
+        
+        // 每500ms创建一个爱心
+        setInterval(createHeart, 500);
+        
+        // 计算相爱天数（从第一条消息日期开始）
+        function calculateDays(firstDate) {
+            const start = new Date(firstDate);
+            const today = new Date();
+            const diffTime = Math.abs(today - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        }
+        
+        // 统计亲亲次数
+        function countKisses(messages) {
+            let total = 0;
+            messages.forEach(msg => {
+                const matches = msg.content.match(/x(\d+)/g);
+                if (matches) {
+                    matches.forEach(match => {
+                        total += parseInt(match.substring(1));
+                    });
+                }
+            });
+            return total;
+        }
+        
         // 从 messages.json 加载消息
         async function loadMessages() {
             const container = document.getElementById('messagesContainer');
@@ -114,6 +276,19 @@
                 const data = await response.json();
                 
                 if (data.messages && data.messages.length > 0) {
+                    // 更新统计信息
+                    const messagesCount = data.messages.length;
+                    const kissCount = countKisses(data.messages);
+                    
+                    // 提取第一条消息的日期来计算天数
+                    const firstDateStr = data.messages[data.messages.length - 1].date.match(/\d{4}[.-]\d{2}[.-]\d{2}/);
+                    const daysCount = firstDateStr ? calculateDays(firstDateStr[0].replace(/\./g, '-')) : 0;
+                    
+                    document.getElementById('daysCount').textContent = daysCount;
+                    document.getElementById('messagesCount').textContent = messagesCount;
+                    document.getElementById('kissCount').textContent = kissCount;
+                    
+                    // 显示消息
                     container.innerHTML = data.messages.map(msg => `
                         <div class="message">
                             <div class="message-date">${msg.date}</div>
@@ -133,8 +308,8 @@
                 container.innerHTML = `
                     <div class="empty-state">
                         <p>💌</p>
-                        <p>还没有留言呢</p>
-                        <p>期待姐姐的第一条碎碎念...</p>
+                        <p>加载失败啦</p>
+                        <p>刷新试试看...</p>
                     </div>
                 `;
             }
@@ -146,3 +321,5 @@
         // 每30秒自动刷新一次
         setInterval(loadMessages, 30000);
     </script>
+</body>
+</html>
