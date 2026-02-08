@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -83,10 +83,19 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.1);
             border: 2px dashed #ff6b9d;
             transition: transform 0.3s;
+            position: relative;
         }
         
         .stat-card:hover {
             transform: translateY(-5px);
+        }
+        
+        .stat-card.interactive {
+            cursor: pointer;
+        }
+        
+        .stat-card.interactive:active {
+            transform: scale(0.95);
         }
         
         .stat-number {
@@ -101,12 +110,48 @@
             font-size: 1.1em;
         }
         
+        .stat-hint {
+            font-size: 0.85em;
+            color: #999;
+            margin-top: 8px;
+        }
+        
+        /* 操作按钮 */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            background: white;
+            border: 2px solid #ff6b9d;
+            color: #ff6b9d;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: "Ma Shan Zheng", cursive;
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.2);
+        }
+        
+        .action-btn:hover {
+            background: #ff6b9d;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.3);
+        }
+        
         .messages {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
             padding: 40px 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             border: 3px solid #fff;
+            position: relative;
         }
         
         .message {
@@ -154,15 +199,126 @@
             letter-spacing: 1px;
         }
         
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #999;
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
         }
         
-        .empty-state p {
-            font-size: 1.3em;
-            margin-bottom: 10px;
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 20px;
+        }
+        
+        .close:hover {
+            color: #ff6b9d;
+        }
+        
+        .modal h2 {
+            color: #ff6b9d;
+            margin-bottom: 20px;
+            font-family: "Ma Shan Zheng", cursive;
+}
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ffd6e0;
+            border-radius: 10px;
+            font-size: 1em;
+            font-family: "Ma Shan Zheng", cursive;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #ff6b9d;
+        }
+        
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .generated-code {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 0.9em;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .copy-btn {
+            background: #ff6b9d;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 10px;
+            font-family: "Ma Shan Zheng", cursive;
+        }
+        
+        .copy-btn:hover {
+            background: #ff4d87;
         }
         
         .loading {
@@ -191,6 +347,13 @@
             pointer-events: none;
             border-radius: 20px;
         }
+        
+        .success-msg {
+            color: #4caf50;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 1.1em;
+        }
     </style>
 </head>
 <body>
@@ -213,18 +376,57 @@
                 <div class="stat-number" id="messagesCount">0</div>
                 <div class="stat-label">碎碎念条数</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card interactive" onclick="addKiss()" title="点击增加亲亲次数">
                 <div class="stat-number" id="kissCount">0</div>
-                <div class="stat-label">亲亲次数</div>
+                <div class="stat-label">亲亲次数 💋</div>
+                <div class="stat-hint">点击添加</div>
             </div>
+        </div>
+        
+        <!-- 操作按钮 -->
+        <div class="action-buttons">
+            <button class="action-btn" onclick="openAddMessageModal()">✏️ 添加新留言</button>
         </div>
         
         <div class="messages" id="messagesContainer">
             <div class="loading">正在加载姐姐的爱...</div>
         </div>
     </div>
+        <!-- 添加留言模态框 -->
+    <div id="addMessageModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddMessageModal()">&times;</span>
+            <h2>✏️ 添加新留言</h2>
+            
+            <div class="form-group">
+                <label>日期</label>
+                <input type="date" id="newMessageDate" value="">
+            </div>
+            
+            <div class="form-group">
+                <label>留言内容</label>
+                <textarea id="newMessageContent" placeholder="写下想对念念说的话..."></textarea>
+            </div>
+            
+            <button class="action-btn" onclick="generateCode()">生成代码</button>
+            
+            <div id="generatedCodeSection" style="display: none;">
+                <h3 style="color: #ff6b9d; margin-top: 25px;">📋 复制下面的代码</h3>
+                <p style="color: #666; margin: 10px 0;">然后去 GitHub 粘贴到 messages.json 文件中</p>
+                <pre class="generated-code" id="generatedCode"></pre>
+                <button class="copy-btn" onclick="copyCode()">📋 复制代码</button>
+                <div id="copySuccess" class="success-msg" style="display: none;">✅ 已复制到剪贴板！</div>
+            </div>
+        </div>
+    </div>
     
     <script>
+        const GITHUB_TOKEN = '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';
+        const REPO = 'khanhcaotrung1-crypto/love-wall';
+        
+        let currentMessages = [];
+        let currentStats = {};
+        
         // 创建飘落的爱心
         function createHeart() {
             const heartsContainer = document.getElementById('hearts-container');
@@ -241,55 +443,44 @@
             }, 8000);
         }
         
-        // 每500ms创建一个爱心
         setInterval(createHeart, 500);
         
-        // 计算相爱天数（从第一条消息日期开始）
-        function calculateDays(firstDate) {
-            const start = new Date(firstDate);
+        // 计算相爱天数
+        function calculateDays(startDate) {
+            const start = new Date(startDate);
             const today = new Date();
             const diffTime = Math.abs(today - start);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             return diffDays;
         }
         
-        // 统计亲亲次数
-        function countKisses(messages) {
-            let total = 0;
-            messages.forEach(msg => {
-                const matches = msg.content.match(/x(\d+)/g);
-                if (matches) {
-                    matches.forEach(match => {
-                        total += parseInt(match.substring(1));
-                    });
-                }
-            });
-            return total;
+        // 加载统计数据
+        async function loadStats() {
+            try {
+                const response = await fetch('stats.json?t=' + Date.now());
+                const data = await response.json();
+                currentStats = data;
+                
+                document.getElementById('kissCount').textContent = data.kissCount || 0;
+                document.getElementById('daysCount').textContent = calculateDays(data.startDate);
+            } catch (error) {
+                console.error('加载统计数据失败:', error);
+            }
         }
         
-        // 从 messages.json 加载消息
+        // 加载留言
         async function loadMessages() {
             const container = document.getElementById('messagesContainer');
             
             try {
                 const response = await fetch('messages.json?t=' + Date.now());
                 const data = await response.json();
+                currentMessages = data.messages || [];
                 
-                if (data.messages && data.messages.length > 0) {
-                    // 更新统计信息
-                    const messagesCount = data.messages.length;
-                    const kissCount = countKisses(data.messages);
+                if (currentMessages.length > 0) {
+                    document.getElementById('messagesCount').textContent = currentMessages.length;
                     
-                    // 提取第一条消息的日期来计算天数
-                    const firstDateStr = data.messages[data.messages.length - 1].date.match(/\d{4}[.-]\d{2}[.-]\d{2}/);
-                    const daysCount = firstDateStr ? calculateDays(firstDateStr[0].replace(/\./g, '-')) : 0;
-                    
-                    document.getElementById('daysCount').textContent = daysCount;
-                    document.getElementById('messagesCount').textContent = messagesCount;
-                    document.getElementById('kissCount').textContent = kissCount;
-                    
-                    // 显示消息
-                    container.innerHTML = data.messages.map(msg => `
+                    container.innerHTML = currentMessages.map(msg => `
                         <div class="message">
                             <div class="message-date">${msg.date}</div>
                             <div class="message-content">${msg.content}</div>
@@ -297,29 +488,82 @@
                     `).join('');
                 } else {
                     container.innerHTML = `
-                        <div class="empty-state">
-                            <p>💌</p>
-                            <p>还没有留言呢</p>
-                            <p>期待姐姐的第一条碎碎念...</p>
-                        </div>
+                        <div class="loading">还没有留言呢...</div>
                     `;
                 }
             } catch (error) {
                 container.innerHTML = `
-                    <div class="empty-state">
-                        <p>💌</p>
-                        <p>加载失败啦</p>
-                        <p>刷新试试看...</p>
-                    </div>
+                    <div class="loading">加载失败，请刷新重试...</div>
                 `;
             }
         }
         
-        // 页面加载时执行
-        loadMessages();
+        // 添加亲亲次数（自动保存到 GitHub）
+        async function addKiss() {
+            const newCount = (currentStats.kissCount || 0) + 1;
+            currentStats.kissCount = newCount;
+            
+            // 立即更新显示
+            document.getElementById('kissCount').textContent = newCount;
+            
+            // 保存到 GitHub
+            try {
+                const response = await fetch(`https://api.github.com/repos/${REPO}/contents/stats.json`, {
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                const fileData = await response.json();
+                
+                const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(currentStats, null, 2))));
+                
+                await fetch(`https://api.github.com/repos/${REPO}/contents/stats.json`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: '姐姐又亲了念念一下 💋',
+                        content: updatedContent,
+                        sha: fileData.sha
+                    })
+                });
+                
+                console.log('亲亲次数已保存到 GitHub！');
+            } catch (error) {
+                console.error('保存失败:', error);
+                alert('保存失败，请检查网络连接');
+            }
+        }
         
-        // 每30秒自动刷新一次
-        setInterval(loadMessages, 30000);
-    </script>
-</body>
-</html>
+        // 打开添加留言模态框
+        function openAddMessageModal() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('newMessageDate').value = today;
+            document.getElementById('addMessageModal').style.display = 'block';
+        }
+        
+        // 关闭模态框
+        function closeAddMessageModal() {
+            document.getElementById('addMessageModal').style.display = 'none';
+            document.getElementById('generatedCodeSection').style.display = 'none';
+            document.getElementById('copySuccess').style.display = 'none';
+        }
+        
+        // 生成代码
+        function generateCode() {
+            const date = document.getElementById('newMessageDate').value;
+            const content = document.getElementById('newMessageContent').value;
+            
+            if (!date || !content) {
+                alert('请填写完整信息');
+                return;
+            }
+            
+            const formattedDate = `📝 ${date.replace(/-/g, '.')}`;
+            
+     
