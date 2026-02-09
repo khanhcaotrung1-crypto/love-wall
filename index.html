@@ -83,7 +83,6 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.1);
             border: 2px dashed #ff6b9d;
             transition: transform 0.3s;
-            position: relative;
         }
         
         .stat-card:hover {
@@ -198,7 +197,6 @@
             font-family: "Ma Shan Zheng", "KaiTi", cursive;
             letter-spacing: 1px;
         }
-        
         /* 模态框 */
         .modal {
             display: none;
@@ -258,7 +256,7 @@
             color: #ff6b9d;
             margin-bottom: 20px;
             font-family: "Ma Shan Zheng", cursive;
-}
+        }
         
         .form-group {
             margin-bottom: 20px;
@@ -303,6 +301,8 @@
             overflow-y: auto;
             margin-top: 20px;
             border: 2px solid #e0e0e0;
+            white-space: pre-wrap;
+            word-break: break-all;
         }
         
         .copy-btn {
@@ -327,7 +327,7 @@
             color: #666;
             font-size: 1.2em;
         }
-        
+
         /* 纸张纹理效果 */
         .messages::before {
             content: '';
@@ -354,6 +354,37 @@
             margin-top: 10px;
             font-size: 1.1em;
         }
+
+        .number-input {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .number-input button {
+            background: #ff6b9d;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .number-input button:hover {
+            background: #ff4d87;
+            transform: scale(1.1);
+        }
+
+        .number-input input {
+            width: 80px;
+            text-align: center;
+            font-size: 1.5em;
+            padding: 8px;
+        }
     </style>
 </head>
 <body>
@@ -376,7 +407,7 @@
                 <div class="stat-number" id="messagesCount">0</div>
                 <div class="stat-label">碎碎念条数</div>
             </div>
-            <div class="stat-card interactive" onclick="addKiss()" title="点击增加亲亲次数">
+            <div class="stat-card interactive" onclick="openKissModal()">
                 <div class="stat-number" id="kissCount">0</div>
                 <div class="stat-label">亲亲次数 💋</div>
                 <div class="stat-hint">点击添加</div>
@@ -392,6 +423,7 @@
             <div class="loading">正在加载姐姐的爱...</div>
         </div>
     </div>
+
         <!-- 添加留言模态框 -->
     <div id="addMessageModal" class="modal">
         <div class="modal-content">
@@ -408,22 +440,46 @@
                 <textarea id="newMessageContent" placeholder="写下想对念念说的话..."></textarea>
             </div>
             
-            <button class="action-btn" onclick="generateCode()">生成代码</button>
+            <button class="action-btn" onclick="generateMessageCode()">生成代码</button>
             
-            <div id="generatedCodeSection" style="display: none;">
+            <div id="generatedMessageCodeSection" style="display: none;">
                 <h3 style="color: #ff6b9d; margin-top: 25px;">📋 复制下面的代码</h3>
-                <p style="color: #666; margin: 10px 0;">然后去 GitHub 粘贴到 messages.json 文件中</p>
-                <pre class="generated-code" id="generatedCode"></pre>
-                <button class="copy-btn" onclick="copyCode()">📋 复制代码</button>
-                <div id="copySuccess" class="success-msg" style="display: none;">✅ 已复制到剪贴板！</div>
+                <p style="color: #666; margin: 10px 0;">然后去 GitHub → messages.json → 编辑 → 全选删除 → 粘贴 → 保存</p>
+                <pre class="generated-code" id="generatedMessageCode"></pre>
+                <button class="copy-btn" onclick="copyMessageCode()">📋 复制代码</button>
+                <div id="copyMessageSuccess" class="success-msg" style="display: none;">✅ 已复制到剪贴板！</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 添加亲亲次数模态框 -->
+    <div id="kissModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeKissModal()">&times;</span>
+            <h2>💋 更新亲亲次数</h2>
+            
+            <div class="form-group">
+                <label>当前次数：<span id="currentKissCount">0</span></label>
+                <div class="number-input">
+                    <button onclick="decreaseKiss()">-</button>
+                    <input type="number" id="newKissCount" value="0" min="0">
+                    <button onclick="increaseKiss()">+</button>
+                </div>
+            </div>
+            
+            <button class="action-btn" onclick="generateKissCode()">生成代码</button>
+            
+            <div id="generatedKissCodeSection" style="display: none;">
+                <h3 style="color: #ff6b9d; margin-top: 25px;">📋 复制下面的代码</h3>
+                <p style="color: #666; margin: 10px 0;">然后去 GitHub → stats.json → 编辑 → 全选删除 → 粘贴 → 保存</p>
+                <pre class="generated-code" id="generatedKissCode"></pre>
+                <button class="copy-btn" onclick="copyKissCode()">📋 复制代码</button>
+                <div id="copyKissSuccess" class="success-msg" style="display: none;">✅ 已复制到剪贴板！</div>
             </div>
         </div>
     </div>
     
     <script>
-        const GITHUB_TOKEN = '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';
-        const REPO = 'khanhcaotrung1-crypto/love-wall';
-        
         let currentMessages = [];
         let currentStats = {};
         
@@ -498,64 +554,49 @@
             }
         }
         
-        // 添加亲亲次数（自动保存到 GitHub）
-        async function addKiss() {
-            const newCount = (currentStats.kissCount || 0) + 1;
-            currentStats.kissCount = newCount;
-            
-            // 立即更新显示
-            document.getElementById('kissCount').textContent = newCount;
-            
-            // 保存到 GitHub
-            try {
-                const response = await fetch(`https://api.github.com/repos/${REPO}/contents/stats.json`, {
-                    headers: {
-                        'Authorization': `token ${GITHUB_TOKEN}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
-                
-                const fileData = await response.json();
-                
-                const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(currentStats, null, 2))));
-                
-                await fetch(`https://api.github.com/repos/${REPO}/contents/stats.json`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `token ${GITHUB_TOKEN}`,
-                        'Accept': 'application/vnd.github.v3+json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: '姐姐又亲了念念一下 💋',
-                        content: updatedContent,
-                        sha: fileData.sha
-                    })
-                });
-                
-                console.log('亲亲次数已保存到 GitHub！');
-            } catch (error) {
-                console.error('保存失败:', error);
-                alert('保存失败，请检查网络连接');
-            }
-        }
-        
         // 打开添加留言模态框
         function openAddMessageModal() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('newMessageDate').value = today;
             document.getElementById('addMessageModal').style.display = 'block';
+            document.getElementById('generatedMessageCodeSection').style.display = 'none';
         }
         
-        // 关闭模态框
+        // 关闭添加留言模态框
         function closeAddMessageModal() {
             document.getElementById('addMessageModal').style.display = 'none';
-            document.getElementById('generatedCodeSection').style.display = 'none';
-            document.getElementById('copySuccess').style.display = 'none';
         }
         
-        // 生成代码
-        function generateCode() {
+        // 打开亲亲次数模态框
+        function openKissModal() {
+            const currentCount = currentStats.kissCount || 0;
+            document.getElementById('currentKissCount').textContent = currentCount;
+            document.getElementById('newKissCount').value = currentCount;
+            document.getElementById('kissModal').style.display = 'block';
+            document.getElementById('generatedKissCodeSection').style.display = 'none';
+        }
+        
+        // 关闭亲亲次数模态框
+        function closeKissModal() {
+            document.getElementById('kissModal').style.display = 'none';
+        }
+        
+        // 增加亲亲次数
+        function increaseKiss() {
+            const input = document.getElementById('newKissCount');
+            input.value = parseInt(input.value) + 1;
+        }
+        
+        // 减少亲亲次数
+        function decreaseKiss() {
+            const input = document.getElementById('newKissCount');
+            if (parseInt(input.value) > 0) {
+                            input.value = parseInt(input.value) - 1;
+            }
+        }
+        
+        // 生成留言代码
+        function generateMessageCode() {
             const date = document.getElementById('newMessageDate').value;
             const content = document.getElementById('newMessageContent').value;
             
@@ -566,4 +607,61 @@
             
             const formattedDate = `📝 ${date.replace(/-/g, '.')}`;
             
-     
+            const newMessage = {
+                date: formattedDate,
+                content: content
+            };
+            
+            const updatedMessages = [newMessage, ...currentMessages];
+            
+            const codeOutput = JSON.stringify({ messages: updatedMessages }, null, 2);
+            
+            document.getElementById('generatedMessageCode').textContent = codeOutput;
+            document.getElementById('generatedMessageCodeSection').style.display = 'block';
+        }
+        
+        // 生成亲亲次数代码
+        function generateKissCode() {
+            const newCount = parseInt(document.getElementById('newKissCount').value);
+            
+            const updatedStats = {
+                ...currentStats,
+                kissCount: newCount
+            };
+            
+            const codeOutput = JSON.stringify(updatedStats, null, 2);
+            
+            document.getElementById('generatedKissCode').textContent = codeOutput;
+            document.getElementById('generatedKissCodeSection').style.display = 'block';
+        }
+        
+        // 复制留言代码
+        function copyMessageCode() {
+            const code = document.getElementById('generatedMessageCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                document.getElementById('copyMessageSuccess').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('copyMessageSuccess').style.display = 'none';
+                }, 3000);
+            });
+        }
+        
+        // 复制亲亲代码
+        function copyKissCode() {
+            const code = document.getElementById('generatedKissCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                document.getElementById('copyKissSuccess').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('copyKissSuccess').style.display = 'none';
+                }, 3000);
+            });
+        }
+        
+        // 初始化
+        loadStats();
+        loadMessages();
+        setInterval(loadMessages, 30000);
+        setInterval(loadStats, 30000);
+    </script>
+</body>
+</html>
